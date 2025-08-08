@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>С Днём Рождения, Мама!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+
+    /* Оболочка-скролл контейнер: изначально не скроллится, включается классом .scrollable */
+    #wrap{height:100%;overflow:hidden}
+    #wrap.scrollable{overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+
+    /* Оставляем фон у body нейтральным */
+    body{font-family:'Montserrat',sans-serif;background:#fff}
+    body.festive{ /* можно оставить для будущих стилизаций */ }
+
+    section{width:100%;height:100vh;scroll-snap-align:start;position:relative;overflow:visible}
+
+    /* --- SECTION 1: bouquet + confetti --- */
+    #section1{display:flex;align-items:center;justify-content:center;background:linear-gradient(to bottom,#ffe4e1,#f5f5dc)}
+    #bgImage{display:none;position:absolute;inset:0;margin:auto;width:50%;opacity:.45;z-index:1;pointer-events:none}
+    /* Букет по центру и увеличенный */
+    #bouquet{width:340px;cursor:pointer;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:40;transition:transform .25s}
+    #bouquet:hover{transform:translate(-50%,-50%) scale(1.06)}
+    #prompt{position:absolute;top:70%;left:50%;transform:translate(-50%,-50%);font-family:'Pacifico',cursive;font-size:2.2rem;color:#d81b60;text-shadow:2px 2px #f8bbd0;display:none;z-index:45}
+    #greeting{position:absolute;top:18%;width:100%;text-align:center;color:#c2185b;font-family:'Pacifico',cursive;display:none;z-index:35;text-shadow:2px 2px #fce4ec}
+    #greeting h1{font-size:3.6rem}
+    #greeting p{font-size:1.5rem;color:#8e24aa}
+    #arrow{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);font-size:3rem;display:none;color:#d84315;z-index:35}
+
+    .confetti,.burst{position:fixed;font-size:1.9rem;pointer-events:none;z-index:9999}
+    @keyframes fall{to{transform:translateY(110vh) rotate(30deg);opacity:0}}
+    @keyframes burst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.25);opacity:0}}
+
+    /* --- SECTION 2: поздравление маме --- */
+    /* Центрируем содержимое по высоте и увеличиваем текст/видео */
+    #section2{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:linear-gradient(to bottom,#ffffff,#f2f2f2)}
+    #section2 .row{display:flex;flex-wrap:wrap;width:90%;max-width:1200px;gap:2rem;align-items:center;margin-top:0}
+    #section2 .text-left,#section2 .text-right{flex:1 1 40%;max-width:45%;font-family:'Pacifico',cursive;font-size:1.9rem;line-height:1.5;color:#c2185b;text-shadow:1px 1px #fce4ec;text-align:left}
+    /* Центрируем текст внутри колонок и увеличиваем видео */
+    #section2 .text-left{display:flex;align-items:center;justify-content:center;padding:1rem}
+    #section2 .text-right{display:flex;align-items:center;justify-content:center;padding:1rem}
+    #section2 .video{flex:1 1 40%;max-width:40%;display:flex;align-items:center;justify-content:center}
+    #section2 .video video{width:100%;height:420px;border:0}
+    #section2 .text-below{padding-top:1rem;font-family:'Pacifico',cursive;font-size:1.6rem;color:#d81b60;text-shadow:2px 2px #ffe0b2;text-align:center}
+
+    /* --- SECTION 3: лестенка с фоновой секцией --- */
+    #section3{display:flex;align-items:center;justify-content:center;padding:2rem;background:linear-gradient(270deg,#ffdde1,#fce1d6,#e6f0ff)}
+    .steps{position:relative;width:90%;max-width:1200px;height:80vh}
+    .step{position:absolute;width:20%;height:28%;overflow:hidden;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);background:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(20px);transition:all .9s cubic-bezier(.2,.9,.2,1);z-index:5}
+    .step2{width:34%}
+    .step img{width:100%;height:100%;object-fit:cover;display:block}
+    .step1{left:2%;top:6%;--delay:0s}
+    .step2{right:12%;top:6%;--delay:.5s}
+    .step3{left:4%;top:54%;--delay:1s}
+    .step4{right:4%;bottom:6%;--delay:1.5s}
+    .steps.in .step{opacity:1;transform:translateY(0)}
+    .steps.in .step{transition-delay:var(--delay)}
+
+    /* 2) увеличиваем шрифт стиха и ставим его поверх картинок */
+    .poem{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:46%;z-index:20;text-align:center;font-family:'Pacifico',cursive;color:#5a1f56;text-shadow:1px 1px #f3e5f5;font-size:1.9rem;line-height:1.4;background:rgba(255,255,255,.95);padding:1.25rem;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.12)}
+
+    @media(max-width:900px){#section2 .text-left,#section2 .text-right{font-size:1.15rem}.step{width:46%;height:18%}.step1{left:4%;top:6%}.step2{left:4%;top:30%}.step3{left:4%;top:54%}.step4{left:4%;top:78%}.poem{max-width:86%;font-size:1.15rem}}
+
+    /* --- SECTION 4 final */
+    #section4{display:flex;align-items:center;justify-content:center;background:#000}
+    #section4 img{max-width:80%;height:auto}
+
+    /* --- СЕПАРАТОР: занимает место внизу секции и плавно смешивает цвета с соседней секцией --- */
+    .sep{position:absolute;left:0;right:0;height:6vh;bottom:-3vh;pointer-events:none;z-index:15}
+    .no-snap{scroll-snap-align:none}
+  </style>
+</head>
+<body>
+  <div id="wrap">
+
+    <section id="section1" data-c1="#ffe4e1" data-c2="#f5f5dc">
+      <img id="bgImage" src="fon.png" alt="Фон">
+      <img id="bouquet" src="liliya-rozovaya.png" alt="Букет лилий">
+      <div id="prompt">Нажми!</div>
+      <div id="greeting"><h1>С днём рождения!</h1><p>Этот сайт я сделал специально для тебя</p></div>
+      <div id="arrow">⬇️</div>
+      <audio id="popSound" src="popper.mp3"></audio>
+      <audio id="sound1" src="sound1.mp3" preload="auto"></audio>
+      <audio id="sound2" src="sound2.mp3" preload="auto"></audio>
+    </section>
+
+    <section id="section2" data-c1="#ffffff" data-c2="#f2f2f2">
+      <div class="row">
+        <div class="text-left">
+          Дорогая мама!<br>
+          В этот тёплый день хочу пожелать тебе бесконечного терпения, здоровья и спокойных ночей. Ты — опора нашей семьи, мудрая и заботливая. Спасибо за нескончаемую доброту и за то, что всегда находишь силы поддержать.
+        </div>
+
+        <div class="video">
+          <video id="birthdayVideo" controls muted preload="metadata" class="vertical-video">
+            <source src="123123.mp4" type="video/mp4">
+            Ваш браузер не поддерживает HTML5 видео.
+          </video>
+        </div>
+
+        <div class="text-right">
+          Пусть каждый новый день приносит тебе маленькие радости и хорошие новости. Желаю света в сердце, уверенности в завтрашнем дне и множества тёплых мгновений. Мы очень тебя любим!
+        </div>
+      </div>
+      <div class="text-below">🎂 <strong>С праздником, мамочка!</strong> 🎁</div>
+      <div id="arrow2">⬇️</div>
+
+      <!-- аудиофайл для секции 2 (поставь свой файл в ту же папку или укажи URL) -->
+      <audio id="section2Sound" src="section2-audio.mp3" preload="auto"></audio>
+    </section>
+
+    <section id="section3" data-c1="#ffdde1" data-c2="#e6f0ff">
+      <div class="steps" id="steps">
+        <div class="step step1"><img src="https://www.regard.ru/static/logo.png" alt="Regard"></div>
+        <div class="step step2"><img src="https://profstories.ru/images/Organizatsiya/es.jpg" alt="EnergoSila"></div>
+        <div class="step step3"><img src="https://tmsearch.onlinepatent.ru/images/f27/f2737de3-fac4-4b70-8d71-fd9c72e0c3b4.jpg" alt="NetWit"></div>
+        <div class="step step4"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9w13Mn0GROiV2NESwX0kG-rQUV2F7e9Fgcg&s" alt="Avangard"></div>
+
+        <div class="poem">
+          В отчётах строка — как звук метронома,
+          В "Regard" точность — в каждом деле дом.
+          В энергосиле — баланс в нежных руках её,
+          В NetWit — мысли быстры, как утренний бег.
+          В авангарде счёт ведёт её мудрая рука —
+          Бухгалтерша светит, словно тихая река.
+        </div>
+      </div>
+    </section>
+
+    <section id="section4" data-c1="#000000" data-c2="#111111">
+      <img id="img4a" src="https://reviewnebula.wordpress.com/wp-content/uploads/2014/07/fec5d-screenshot2014-07-21at10-51-48am.png" alt="">
+    </section>
+
+  </div>
+
+  <script>
+    // confetti + scroll + steps + separators
+    let clicked = false;
+    const wrap = document.getElementById('wrap');
+    const bouquet = document.getElementById('bouquet');
+    const prompt = document.getElementById('prompt');
+    const popSound = document.getElementById('popSound');
+    const sound1 = document.getElementById('sound1');
+    const sound2 = document.getElementById('sound2');
+    const bgImage = document.getElementById('bgImage');
+    const greeting = document.getElementById('greeting');
+    const arrow = document.getElementById('arrow');
+    const emojis = ['🎈','🎁','🎉','🥳','🎂'];
+
+    // подсказка
+    bouquet.addEventListener('mouseenter', ()=>{ if(!clicked) prompt.style.display='block' });
+    bouquet.addEventListener('mouseleave', ()=>{ prompt.style.display='none' });
+
+    function randomInt(min,max){return Math.floor(Math.random()* (max-min+1))+min}
+    function createBurst(){
+      const rect = bouquet.getBoundingClientRect();
+      for(let i=0;i<40;i++){
+        const span = document.createElement('span');
+        span.className='burst';
+        span.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+        span.style.left = (rect.left + rect.width/2) + 'px';
+        span.style.top  = (rect.top + rect.height/2) + 'px';
+        span.style.setProperty('--dx', randomInt(-220,220)+'px');
+        span.style.setProperty('--dy', randomInt(-220,220)+'px');
+        span.style.animation = `burst ${0.9 + Math.random()*0.8}s ease-out`;
+        span.style.zIndex = 9999;
+        document.body.appendChild(span);
+        span.addEventListener('animationend', ()=> span.remove());
+      }
+    }
+
+    function createFall(){
+      const span = document.createElement('span');
+      span.className='confetti';
+      span.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+      span.style.left = Math.random()*100 + 'vw';
+      span.style.top = '-5vh';
+      span.style.animation = `fall ${4 + Math.random()*3}s linear`;
+      span.style.zIndex = 9999;
+      document.body.appendChild(span);
+      span.addEventListener('animationend', ()=> span.remove());
+    }
+
+    let fallInterval = null;
+    bouquet.addEventListener('click', ()=>{
+      if(clicked) return;
+      clicked = true;
+      setTimeout(()=>{ bouquet.style.display='none' },100);
+      try{ popSound.play(); sound1.play(); sound2.play(); }catch(e){}
+
+      // включаем прокрутку по секциям (как в твоём оригинальном коде) — теперь на обёртке
+      wrap.classList.add('scrollable');
+      document.body.classList.add('festive');
+
+      prompt.style.display='none';
+      bouquet.style.pointerEvents='none';
+      bgImage.style.display='block';
+      greeting.style.display='block';
+      document.getElementById('arrow').style.display='block';
+      createBurst();
+      fallInterval = setInterval(createFall, 300);
+
+      // чтобы snap точно заработал, гарантированно прокручиваемся на текущую секцию (вверх)
+      setTimeout(()=>{ wrap.scrollTo({ top: 0, behavior: 'instant' }) }, 50);
+    });
+
+    // автоплей видео в секции 2 — наблюдаем за видимостью внутри wrap
+    const video = document.getElementById('birthdayVideo');
+    const s2sound = document.getElementById('section2Sound');
+    const section2 = document.getElementById('section2');
+    if(video && section2){
+      const observer = new IntersectionObserver(entries=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){ video.play().catch(()=>{}); if(s2sound) s2sound.play().catch(()=>{}); }
+          else { video.pause(); video.currentTime = 0; if(s2sound){ s2sound.pause(); s2sound.currentTime = 0; } }
+        });
+      },{root:wrap,threshold:0.5});
+      observer.observe(section2);
+    }
+
+    // появление "ступеней" в секции 3 — тоже внутри wrap
+    const steps = document.getElementById('steps');
+    new IntersectionObserver(entries=>{ entries.forEach(entry=>{ if(entry.isIntersecting){ steps.classList.add('in') } }); },{root:wrap,threshold:0.2}).observe(document.getElementById('section3'));
+
+    // === создаём сепараторы между секциями, чтобы сделать переходы цвета на стыках ===
+    (function createSeparators(){
+      const sections = Array.from(document.querySelectorAll('section'));
+      const sepHeight = Math.max(window.innerHeight * 0.06, 48); // примерно 6vh, минимум 48px
+      sections.forEach((sec, idx) => {
+        if(idx === sections.length - 1) return; // для последней секции сепаратор не нужен
+        const next = sections[idx+1];
+        const c1 = sec.dataset.c2 || '#ffffff';
+        const c2 = next.dataset.c1 || '#ffffff';
+        const sep = document.createElement('div');
+        sep.className = 'sep no-snap';
+        sep.style.height = sepHeight + 'px';
+        sep.style.bottom = -(sepHeight/2) + 'px';
+        sep.style.background = `linear-gradient(to bottom, ${c1}, ${c2})`;
+        sep.style.pointerEvents = 'none';
+        sec.appendChild(sep);
+      });
+    })();
+
+    // API: остановить конфетти
+    window.stopConfetti = ()=>{ if(fallInterval) clearInterval(fallInterval) };
+
+    // Обработчик ресайза — пересчитываем высоту сепараторов
+    window.addEventListener('resize', ()=>{
+      const seps = document.querySelectorAll('.sep');
+      const newH = Math.max(window.innerHeight * 0.06, 48);
+      seps.forEach(s=>{ s.style.height = newH + 'px'; s.style.bottom = -(newH/2) + 'px'; });
+    });
+  </script>
+</body>
+</html>
